@@ -19,17 +19,13 @@ def losses_func(network, dataset, w, fActivation):
 
 def gradFMP(lFx, network, dataset, w, fActivation, e0):
     
-    grad = list()
+    grad = []
     
-    lenY = 0
-    
-    for item in w:
-        lenY += 1
-    
-    for i in range(0, lenY):
-        currentPoint = np.array(w)
+    for i in range(0, len(w)):
+        
         grad.append(list())
         for j in range(0, len(w[i])):
+            currentPoint = np.array(w)
             currentPoint[i][j] = currentPoint[i][j] + e0
 
             dfx = (lFx(network, dataset, currentPoint, fActivation) - lFx(network, dataset, w, fActivation))/e0
@@ -51,7 +47,10 @@ def trainNetwork(network, losses_function, dataset, gradFunction, weights, fActi
             
     print("W: ", weights)
     
+    print(network([0, 0], weights, fAct))
+    print(network([0, 1], weights, fAct))
     print(network([1, 0], weights, fAct))
+    print(network([1, 1], weights, fAct))
     
 dataset = [
     [0, 0, 0],
