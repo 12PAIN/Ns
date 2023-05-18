@@ -50,8 +50,8 @@ def trainNetwork(network, losses_function, dataset, gradFunction, weights, fActi
         weights = weights - (grad * h)
         
         if i < 2:
-           print("W:",i," \n", weights)
-           print("G:",i," \n", grad)
+            print("W:",i," \n", weights)
+            print("G:",i," \n", grad)
             
     print("W: ", weights)
     
