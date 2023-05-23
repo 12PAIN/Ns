@@ -19,7 +19,7 @@ def gradFMP(lFx, dataset, w, e0):
         currentWeight = np.array(w)
         currentWeight[i] = currentWeight[i] + e0
 
-        dfx = (lFx(w, dataset) - lFx(currentWeight, dataset))/e0
+        dfx = (lFx(currentWeight, dataset) - lFx(w, dataset))/e0
         
         grad.append(dfx)
     
@@ -27,11 +27,11 @@ def gradFMP(lFx, dataset, w, e0):
 
 def train(dataset, w, lFx, h, e0):
     
-    epoches = 10
+    epoches = 100
     
     for i in range(0, epoches):
         grad = gradFMP(lFx, dataset, w, e0)
-        w = w + grad*h
+        w = w - grad*h
 
     print("x1 Pr0:" ,softmax(network(dataset[0], w), 0))
     print("x1 Pr1:" ,softmax(network(dataset[0], w), 1))
