@@ -17,8 +17,6 @@ def rmse(preds: ndarray, actuals: ndarray):
     '''
     return np.sqrt(np.mean(np.power(preds - actuals, 2)))
 
-
-
 def init_weights(input_size: int,
                  hidden_size: int) -> dict[str, ndarray]:
     '''
@@ -53,14 +51,12 @@ def generate_batch(X: ndarray,
 
     return X_batch, y_batch
 
-
 def permute_data(X: ndarray, y: ndarray):
     '''
     Permute X and y, using the same permutation, along axis=0
     '''
     perm = np.random.permutation(X.shape[0])
     return X[perm], y[perm]
-
 
 def sigmoid(x: ndarray) -> ndarray:
     return 1 / (1 + np.exp(-1.0 * x))
@@ -80,11 +76,10 @@ def relu_der(data: ndarray) -> ndarray:
     return c
 
 def activation(data: ndarray) -> ndarray:
-    return sigmoid(data)
+    return relu(data)
 
 def activation_der(data: ndarray) -> ndarray:
-    return sigmoid_der(data)
-
+    return relu_der(data)
 
 def forward_loss(X: ndarray,
                  y: ndarray,
@@ -109,8 +104,6 @@ def forward_loss(X: ndarray,
     forward_info['P'] = P
     forward_info['y'] = y
     return loss, forward_info
-
-
 
 def loss_gradients(forward_info: dict[str, ndarray],
                    weights: dict[str, ndarray]) -> dict[str, ndarray]:
@@ -175,7 +168,22 @@ def train(X: ndarray,
     start = 0
 
     # Initialize weights
-    weights = init_weights(X.shape[1], 5)
+    weights = init_weights(X.shape[1], 4)
+    R: dict[str, ndarray] = {}
+    R['W1'] = np.zeros_like(weights['W1'])
+    R['B1'] = np.zeros_like(weights['B1'])
+    R['W2'] = np.zeros_like(weights['W2'])
+    R['B2'] = np.zeros_like(weights['B2'])
+    
+    M: dict[str, ndarray] = {}
+    M['W1'] = np.zeros_like(weights['W1'])
+    M['B1'] = np.zeros_like(weights['B1'])
+    M['W2'] = np.zeros_like(weights['W2'])
+    M['B2'] = np.zeros_like(weights['B2'])
+    
+    e0 = 1e-6
+    b1 = 0.9
+    b2 = 0.999
     
     # Permute data
     X, y = permute_data(X, y)
@@ -201,13 +209,14 @@ def train(X: ndarray,
 
         loss_grads = loss_gradients(forward_info, weights)
         for key in weights.keys():
-            weights[key] -= learning_rate * loss_grads[key]
+            M[key] = b1*M[key] + (1-b1)*loss_grads[key]
+            R[key] = b2*R[key] + (1-b2)*np.power(loss_grads[key],2)
+            weights[key] -= (M[key]/(np.sqrt(R[key] + e0)))*learning_rate
 
     if return_weights:
         return losses, weights
 
     return None
-
 
 def predict(X: ndarray,
             weights: dict[str, ndarray]) -> ndarray:
@@ -231,22 +240,22 @@ X_train, y_train = X[:70], y[:70]
 X_test, y_test = X[70:], y[70:]
 
 # xor тест
-# X_train = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
-# y_train = np.array([[0], [0], [0], [1]])
-# X_test, y_test = X_train, y_train
+X_train = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
+y_train = np.array([[0], [1], [1], [0]])
+X_test, y_test = X_train, y_train
 
 # функция y = x1^2 + x2^2
-# X_train = np.array([[0, 0], [0, 1], [1, 0], [1, 2], [2, 2]])
-# y_train = np.array([[0], [1], [1], [5], [8]])
-# X_test, y_test = np.array([[2, 1], [0, 2]]), np.array([[5], [4]])
+#X_train = np.array([[0, 0], [0, 1], [1, 0], [1, 2], [2, 2]])
+#y_train = np.array([[0], [1], [1], [5], [8]])
+#X_test, y_test = np.array([[2, 1], [0, 2]]), np.array([[5], [4]])
 
 losses, weights = train(X_train, y_train,
-                        n_iter=10000,
-                        learning_rate=0.0001,
-                        batch_size=23,
+                        n_iter=3000,
+                        learning_rate=0.01,
+                        batch_size=1,
                         return_losses=True,
-                        return_weights=True,
-                        seed=180708)
+                        return_weights=True
+)
 
 print(*losses[-5:])
 
